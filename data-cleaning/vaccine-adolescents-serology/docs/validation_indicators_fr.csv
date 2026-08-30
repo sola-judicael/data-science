@@ -1,0 +1,28 @@
+﻿1. Nombre de lignes et de ID;;;
+;;;
+Nombre de lignes;294;;Aucune perte de ligne
+Nombre d'ID uniques;294;;Aucun doublon d'ID
+;;;
+2. % de Censure haute, Non teste par temps, comparé au croisement initial;;;
+;;;
+% Censure_haute à 28j;43;;
+% Censure_haute à 28j;156;;
+% Censure_haute à 7 mois;174;;
+;;;
+3. Titre_AC moyen (hors censurés/non testés) croissant dans le temps;;;
+;;;
+Moyenne 28j;18.98108088;;Référence de départ
+Moyenne 3mois;29.71993191;;Croissance logique confirmée
+"Moyenne 7mois : =MOYENNE.SI(colonne_statut_7mois_mesure1;""Normal"";colonne_valeur_7mois_mesure1)";44.49317719;;croissance confirmée
+;;;
+4. Cohérence chronologique des dates;;;
+;;;
+Cohérence chronologique des dates;0;;Aucune inversion de date
+;;;
+5. Plage d'âge plausible;;;
+Minimum;11;;Cohérent avec public adolescent scolarisé
+Maximum;16;;
+;;;
+6. Cohérence Titre_tronque / Statut_evenement;;;
+;;;
+Titre_tronque / Statut_evenement;0;;Règle de construction respectée

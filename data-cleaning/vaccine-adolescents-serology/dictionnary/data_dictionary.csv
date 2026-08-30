@@ -1,0 +1,52 @@
+﻿Dictionnaire révisé;;;;;;;
+;;;;;;;
+Méthode de reconstruction ;;;;;;;
+Hypothèses basées sur;;;;;;;
+(1) L'analyse directe des valeurs,;;;;;;;
+(2) Le vocabulaire standard de la sérologie vaccinale,;;;;;;;
+"(3) Le contexte de l'étude (adolescents scolarisés, suivi à 28j/3mois/7mois)""";;;;;;;
+(4) Recherche de logique par croisement de variables;;;;;;;
+;;;;;;;
+;;;;;;;
+Nom initial;Nom proposé (FR);Nom proposé (EN);Type;Signification (FR);Signification (EN);Certitude;Problème identifié
+D;ID_sujet;Subject_ID;Catégorique (Nominale);"Identifiant unique du sujet avec préfixe ""US-""";"Unique subject identifier with ""US-"" prefix";Probable;"Signification de ""US-"" non confirmée"
+Gender;Sexe;Sex;Catégorique (Nominale);Sexe du sujet;Subject's sex;Certain;Aucun
+BirthComor;Comorbidite_naissance;Birth_comorbidity;Catégorique (Nominale);Présence de comorbidité à la naissance (Yes/No/NA);Presence of birth comorbidity (Yes/No/NA);Probable;"Nature exacte non précisée ; ""NA"" stocké comme texte"
+BMI measure;Valeur_IMC;BMI_value;Numérique (Décimal);Valeur numérique de l'IMC;Numeric BMI value;Certain;Aucun
+BMI;Classe_IMC;BMI_class;Catégorique (Ordinale);Catégorie de poids;Weight category;Certain;Aucun
+Vacstat;Statut_vaccinal;Vaccination_status;Catégorique (Nominale);Statut vaccinal;Vaccination status;Certain;Aucun
+Date 1;Date_dose1;Dose1_date;Date;Date de la 1ère dose de vaccin;Date of 1st vaccine dose;Probable;"Manquants codés ""#N/A"" en texte"
+Date 2;Date_dose2;Dose2_date;Date;Date de la 2ème dose (~3-4 sem. après);Date of 2nd dose (~3-4 weeks later);Probable;Idem
+Age;Age;Age;Numérique (Entier);Âge en années;Age in years;Certain;"Format ""Standard"""
+Class;Classe_scolaire;School_grade;Catégorique (Nominale);Niveau scolaire;School grade level;Probable;Seulement 2 modalités (S1, S4)
+Infected prior to vaccination;Infection_anterieure;Prior_infection;Catégorique (Nominale);Statut sérologique avant vaccination;Serological status prior to vaccination;Probable;"""R"" déduit, non documenté"
+Quantivac at 28 days;Titre_AC_28j_statut;Antibody_titer_28d_status;Catégorique (Nominale);Statut de la mesure (Normal/Censure_haute/Non_teste/Echec_technique);Measurement status;Reconstruit;Créé lors du nettoyage
+(idem);Titre_AC_28j;Antibody_titer_28d;Numérique (Continu);Valeur brute d'origine;Original raw value;Probable;"Valeurs ""*****""/"">120"" mêlées aux nombres"
+(idem);Titre_AC_28j_valeurs;Antibody_titer_28d_value;Numérique (Continu);Titre quantitatif d'anticorps à 28 jours (valeur numérique pure);Quantitative antibody titer at 28 days (clean numeric);Probable;Aucun (nettoyé)
+Q 28 Result;Resultat_qual_28j;Qual_result_28d;Catégorique (Nominale);Résultat qualitatif dérivé;Derived qualitative result;Probable, confirmé par croisement;"""?""/""*"" clarifiés (Incertain/Non_teste)"
+ODQ28Days;DensiteOptique_28j;Optical_density_28d;Numérique (Continu);Densité optique (ELISA) à 28 jours;Optical density (ELISA) at 28 days;Probable;Terminologie déduite
+NCPat28 days;CapaciteNeutralisation_28j_mesure1;Neutralization_capacity_28d_m1;Numérique (Continu);Capacité de neutralisation à 28j, 1ère mesure;Neutralization capacity at 28d, 1st reading;Probable;Séparée d'une cellule à double valeur
+(idem);CapaciteNeutralisation_28j_mesure2;Neutralization_capacity_28d_m2;Numérique (Continu);2ème mesure (relecture);2nd reading (duplicate);Probable;Idem
+N28Results;Resultat_neutralisation_28j;Neutralization_result_28d;Catégorique (Nominale);Résultat qualitatif de neutralisation;Qualitative neutralization result;Probable;Aucun
+Quantivacat3 months;Titre_AC_3mois_statut;Antibody_titer_3m_status;Catégorique (Nominale);Statut de la mesure;Measurement status;Reconstruit;Créé lors du nettoyage
+(idem);Titre_AC_3mois;Antibody_titer_3m;Numérique (Continu);Valeur brute d'origine;Original raw value;Probable;""">120""/""*****"" mêlés"
+(idem);Titre_AC_3mois_valeurs;Antibody_titer_3m_value;Numérique (Continu);Titre quantitatif à 3 mois (valeur pure);Quantitative antibody titer at 3 months (clean);Probable;Aucun (nettoyé)
+Q3 Result;Resultat_qual_3mois;Qual_result_3m;Catégorique (Nominale);Résultat qualitatif;Qualitative result;Probable, confirmé par croisement;Idem 28j
+ODQ4months;DensiteOptique_3mois;Optical_density_3m;Numérique (Continu);Densité optique à 3 mois;Optical density at 3 months;Probable;"Nom d'origine incohérent (""4months"")"
+NCPat3months;CapaciteNeutralisation_3mois_mesure1;Neutralization_capacity_3m_m1;Numérique (Continu);Capacité de neutralisation à 3 mois, 1ère mesure;Neutralization capacity at 3m, 1st reading;Probable;Séparée d'une cellule à double valeur
+(idem);CapaciteNeutralisation_3mois_mesure2;Neutralization_capacity_3m_m2;Numérique (Continu);2ème mesure;2nd reading;Probable;Idem
+N3Result;Resultat_neutralisation_3mois;Neutralization_result_3m;Catégorique (Nominale);Résultat qualitatif;Qualitative result;Probable;Aucun
+Quantivacat7months;Titre_AC_7mois_mesure_1_statut;Antibody_titer_7m_m1_status;Catégorique (Nominale);Statut de la 1ère mesure;1st reading status;Reconstruit;Créé lors du nettoyage
+(idem);Titre_AC_7mois_mesure_1;Antibody_titer_7m_m1;Numérique (Continu);Valeur brute, 1ère mesure;Raw value, 1st reading;Probable;""">120"", ""*****"" mêlés"
+(idem);Titre_AC_7mois_mesure_1_valeurs;Antibody_titer_7m_m1_value;Numérique (Continu);Titre à 7 mois, 1ère mesure (valeur pure);Antibody titer at 7m, 1st reading (clean);Probable;Bug ×10000 corrigé (validé par indicateur)
+(idem);Titre_AC_7mois_mesure_2_statut;Antibody_titer_7m_m2_status;Catégorique (Nominale);Statut de la 2ème mesure;2nd reading status;Reconstruit;Créé lors du nettoyage
+(idem);Titre_AC_7mois_mesure_2;Antibody_titer_7m_m2;Numérique (Continu);Valeur brute, 2ème mesure;Raw value, 2nd reading;Probable;Idem
+(idem);Titre_AC_7mois_mesure_2_valeurs;Antibody_titer_7m_m2_value;Numérique (Continu);Titre à 7 mois, 2ème mesure (valeur pure);Antibody titer at 7m, 2nd reading (clean);Probable;Aucun (nettoyé)
+Q7Result;Resultat_qual_7mois;Qual_result_7m;Catégorique (Nominale);Résultat qualitatif à 7 mois;Qualitative result at 7 months;Probable, confirmé par croisement;Idem
+ODQ7months;DensiteOptique_7mois;Optical_density_7m;Numérique (Continu);Densité optique à 7 mois;Optical density at 7 months;Probable;Aucun
+NCPat7months;CapaciteNeutralisation_7mois_mesure1;Neutralization_capacity_7m_m1;Numérique (Continu);Capacité de neutralisation à 7 mois, 1ère mesure;Neutralization capacity at 7m, 1st reading;Probable;Séparée d'une cellule à double valeur
+(idem);CapaciteNeutralisation_7mois_mesure2;Neutralization_capacity_7m_m2;Numérique (Continu);2ème mesure;2nd reading;Probable;Idem
+N7Result;Resultat_neutralisation_7mois;Neutralization_result_7m;Catégorique (Nominale);Résultat qualitatif;Qualitative result;Probable;Aucun
+Time;Temps_suivi_jours;Followup_time_days;Numérique (Discret);Jour de visite de suivi (92/182/210);Follow-up visit day (92/182/210 only);Probable;Valeurs manquantes
+Status;Statut_evenement;Event_status;Catégorique (Nominale, binaire);Indicateur d'événement (0=censuré, 1=survenu);Event indicator (0=censored, 1=occurred);À confirmer;Nature exacte non confirmée
+TruncatedTiter;Titre_tronque_dérivée;Truncated_titer_derived;Numérique (Continu);Titre au seuil de censure (120), rattaché au temps de suivi le plus proche;Titer at censoring threshold (120), nearest follow-up time;Reconstruit;"Colonne vide à l'origine ; construite selon règle documentée"
