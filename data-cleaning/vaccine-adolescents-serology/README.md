@@ -4,96 +4,66 @@
 
 ---
 
-## 🇫🇷 Français
+## Français
 
-### C'est quoi ce projet ?
+Je suis étudiant en médecine et j'apprends l'analyse de données à côté. C'est mon premier vrai projet de nettoyage de données, sur un vrai dataset (pas un truc simulé pour l'exercice).
 
-Je suis étudiant en médecine et j'apprends l'analyse de données en parallèle. Ce projet est mon premier vrai exercice de nettoyage de données, fait sur un vrai jeu de données (pas un dataset simulé pour l'exercice).
+L'idée : montrer comment je m'y prends pour nettoyer des données quand il n'y a aucune doc pour m'aider, et comment je vérifie mon propre travail après coup.
 
-Le but : montrer comment je m'y prends pour nettoyer des données quand il n'y a aucune documentation pour m'aider, et comment je vérifie mon propre travail.
+**D'où viennent les données** : d'une vraie étude sur un vaccin COVID chez des adolescents scolarisés, avec des prises de sang à 28 jours, 3 mois et 7 mois après la vaccination. Récupérées sur le dépôt [OxfordIHTM/messy-data](https://github.com/OxfordIHTM/messy-data), qui propose des données volontairement sales pour s'entraîner.
 
-### D'où viennent les données
+**Dans ce dossier** :
+- **data/raw** — le fichier original, jamais touché
+- **data/clean** — les données nettoyées, en français et en anglais
+- **dictionary** — le dictionnaire des variables
+- **docs** — mon journal, où j'ai noté chaque étape et chaque décision
+- **outputs** — vide pour l'instant, les graphiques viendront plus tard
 
-Les données viennent d'une vraie étude sur un vaccin COVID chez des adolescents scolarisés, avec des tests sanguins faits à 28 jours, 3 mois et 7 mois après la vaccination. Je les ai récupérées sur le dépôt [OxfordIHTM/messy-data](https://github.com/OxfordIHTM/messy-data), qui propose exprès des données "sales" pour s'entraîner.
+**Comment j'ai travaillé** : il n'y avait aucune documentation officielle sur les variables. J'ai dû reconstruire un dictionnaire moi-même, en regardant les vraies valeurs des colonnes, en cherchant le vocabulaire médical qui correspondait, et en vérifiant mes hypothèses en croisant plusieurs colonnes entre elles.
 
-### Comment le dossier est organisé
+Le nettoyage s'est fait en 7 étapes : renommer les colonnes, gérer les valeurs manquantes, séparer les cellules qui avaient 2 valeurs collées, gérer les codes bizarres et les valeurs limites, vérifier que chaque colonne avait le bon type, reconstruire une variable qui était vide à l'origine, et calculer quelques indicateurs pour vérifier que tout le nettoyage tenait la route. Le détail complet, action par action, est dans le journal : `docs/cleaning_journal_fr.csv`.
 
-```
-vaccine-adolescents-serology/
-├── data/
-│   ├── raw/         → les données telles que je les ai trouvées, jamais touchées
-│   └── clean/        → les données une fois nettoyées (en français et en anglais)
-├── dictionary/        → le dictionnaire des variables
-├── docs/               → mon journal, où j'ai noté chaque étape et chaque décision
-└── outputs/           → pas encore fait (graphiques à venir)
-```
+**Ce que j'ai trouvé intéressant en le faisant** :
 
-### Comment j'ai travaillé
+Une colonne avait un code qui ressemblait à un échec de test dans 62% des cas, ce qui me paraissait énorme pour une vraie panne d'appareil. En croisant avec une autre colonne, j'ai compris que ce n'était pas un échec — le test n'avait simplement pas été fait pour ces sujets-là. J'ai corrigé l'étiquette.
 
-Il n'y avait aucune documentation officielle sur les variables. J'ai donc dû reconstruire un dictionnaire moi-même, en regardant les vraies valeurs dans les colonnes, en cherchant le vocabulaire médical qui correspond, et en vérifiant mes hypothèses en croisant plusieurs colonnes entre elles.
+Un de mes calculs de vérification a donné un résultat absurde, une moyenne 10 000 fois trop grande. En creusant, j'ai trouvé un bug de virgule/point resté caché dans une colonne, malgré plusieurs étapes de nettoyage déjà faites avant. Ça m'a appris à toujours vérifier avec des indicateurs de bon sens, pas juste faire confiance à mes propres manipulations précédentes.
 
-Le nettoyage s'est fait en 7 étapes : renommer les colonnes, gérer les valeurs manquantes, séparer les cellules qui avaient 2 valeurs collées ensemble, gérer les codes bizarres et valeurs limites, vérifier que chaque colonne avait le bon type (nombre, date, texte), reconstruire une variable qui était vide à l'origine, et enfin calculer quelques indicateurs pour vérifier que tout le nettoyage tenait la route.
+Une colonne était complètement vide dans le fichier d'origine. Au lieu de la supprimer ou d'inventer des valeurs, je l'ai reconstruite avec une règle claire, documentée dans le journal.
 
-Tout le détail, action par action, est dans mon journal : [`docs/cleaning_journal_fr.csv`](docs/cleaning_journal_fr.csv).
+**Outils** : Excel pour tout le nettoyage et la documentation, GitHub pour publier.
 
-### Ce que j'ai trouvé d'intéressant en le faisant
-
-- Une colonne avait un code qui ressemblait à un échec de test dans 62% des cas — ça semblait énorme pour une vraie panne. En vérifiant avec une autre colonne, j'ai compris que ce n'était pas un échec, mais simplement que le test n'avait pas été fait pour ces sujets-là. J'ai corrigé l'étiquette en conséquence.
-- Une de mes vérifications finales a donné un résultat complètement absurde (une moyenne 10 000 fois trop grande). En creusant, j'ai trouvé un bug de virgule/point resté caché dans une colonne, malgré plusieurs étapes de nettoyage déjà faites. Ça m'a appris à toujours vérifier mes résultats avec des indicateurs de bon sens, pas juste faire confiance à mes propres manipulations.
-- Une colonne était complètement vide dans le fichier d'origine. Plutôt que de la supprimer ou d'inventer des valeurs au hasard, je l'ai reconstruite avec une règle claire que j'ai documentée.
-
-### Avec quoi j'ai travaillé
-
-Excel pour tout le nettoyage et la documentation, GitHub pour publier le résultat.
-
-### Une précision sur la langue
-
-Mon journal de nettoyage est en français uniquement (c'est ma trace de travail perso). Le dataset final et le dictionnaire, eux, sont en français ET en anglais.
+**Sur la langue** : mon journal est en français uniquement, c'est ma trace de travail perso. Le dataset final et le dictionnaire sont en français et en anglais.
 
 ---
 
-## 🇬🇧 English
+## English
 
-### About this project
+I'm a medical student learning data analysis on the side. This is my first real data cleaning project, on a real dataset — not something simulated for practice.
 
-I'm a medical student learning data analysis on the side. This is my first real data cleaning project, done on a real dataset (not something simulated for the exercise).
+The idea: show how I clean data when there's no documentation to lean on, and how I check my own work afterward.
 
-The goal: show how I clean data when there's no documentation to rely on, and how I check my own work along the way.
+**Where the data comes from**: a real study on a COVID vaccine in school-aged adolescents, with blood tests at 28 days, 3 months, and 7 months after vaccination. Pulled from the [OxfordIHTM/messy-data](https://github.com/OxfordIHTM/messy-data) repository, which deliberately provides messy data for practice.
 
-### Where the data comes from
+**In this folder**:
+- **data/raw** — the original file, never touched
+- **data/clean** — the cleaned data, in French and English
+- **dictionary** — the variable dictionary
+- **docs** — my journal, where I noted every step and decision
+- **outputs** — empty for now, charts will come later
 
-The data comes from a real study on a COVID vaccine in school-aged adolescents, with blood tests done at 28 days, 3 months, and 7 months after vaccination. I got it from the [OxfordIHTM/messy-data](https://github.com/OxfordIHTM/messy-data) repository, which deliberately provides messy data for practice.
+**How I worked**: there was no official documentation for the variables. I had to rebuild a dictionary myself, by looking at the actual values in each column, matching them to standard medical vocabulary, and checking my guesses by cross-referencing several columns.
 
-### How the folder is organized
+The cleaning happened in 7 steps: renaming columns, handling missing values, splitting cells with two values stuck together, dealing with weird codes and threshold values, checking that every column had the right type, rebuilding a variable that was empty from the start, and calculating a few indicators to check the whole thing held up. Full detail, step by step, is in the journal: `docs/cleaning_journal_fr.csv` (French only).
 
-```
-vaccine-adolescents-serology/
-├── data/
-│   ├── raw/         → the data as I found it, never touched
-│   └── clean/        → the cleaned data (French and English)
-├── dictionary/        → the variable dictionary
-├── docs/               → my journal, where I noted every step and decision
-└── outputs/           → not done yet (charts coming later)
-```
+**Things I found interesting while doing this**:
 
-### How I worked
+One column had a code that looked like a test failure in 62% of cases, which seemed way too high for a real equipment issue. Cross-checking with another column, I realized it wasn't a failure — the test just hadn't been run for those subjects. Fixed the label.
 
-There was no official documentation for the variables. So I had to rebuild a dictionary myself, by looking at the actual values in each column, matching them to standard medical vocabulary, and checking my guesses by cross-referencing several columns together.
+One of my final checks gave an absurd result, an average 10,000 times too big. Digging in, I found a decimal-point bug still hiding in a column, despite earlier cleaning steps. That taught me to always sanity-check with indicators, not just trust my own past work.
 
-The cleaning happened in 7 steps: renaming columns, handling missing values, splitting cells that had two values stuck together, dealing with weird codes and threshold values, checking that every column had the right type (number, date, text), rebuilding a variable that was empty from the start, and finally calculating a few indicators to check the whole cleaning actually held up.
+One column was completely empty in the original file. Instead of deleting it or making up values, I rebuilt it with a clear rule, documented in the journal.
 
-Full detail, action by action, is in my journal: [`docs/cleaning_journal_fr.csv`](docs/cleaning_journal_fr.csv) (French only).
+**Tools**: Excel for the cleaning and documentation, GitHub to publish.
 
-### Things I found interesting while doing this
-
-- One column had a code that looked like a test failure in 62% of cases — that seemed way too high for a real equipment issue. By checking against another column, I realized it wasn't a failure at all, just that the test hadn't been run for those subjects. I fixed the label accordingly.
-- One of my final checks gave a completely absurd result (an average 10,000 times too big). Digging in, I found a decimal-point bug still hiding in a column, despite several cleaning steps already done. That taught me to always check my results with sanity-check indicators, not just trust my own manipulations.
-- One column was completely empty in the original file. Instead of deleting it or making up random values, I rebuilt it with a clear, documented rule.
-
-### Tools I used
-
-Excel for all the cleaning and documentation, GitHub to publish the result.
-
-### A note on language
-
-My cleaning journal is in French only (it's my personal working notes). The final dataset and dictionary are in both French and English.
+**On language**: my journal is French only, it's my personal working notes. The final dataset and dictionary are in both French and English.
