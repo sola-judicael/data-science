@@ -11,9 +11,9 @@ Nombre d'ID uniques;294;;Aucun doublon d'ID
 ;;;
 3. Titre_AC moyen (hors censurés/non testés) croissant dans le temps;;;
 ;;;
-Moyenne 28j;18.98108088;;Référence de départ
-Moyenne 3mois;29.71993191;;Croissance logique confirmée
-"Moyenne 7mois : =MOYENNE.SI(colonne_statut_7mois_mesure1;""Normal"";colonne_valeur_7mois_mesure1)";44.49317719;;croissance confirmée
+Moyenne 28j;1.898.108.088;;Référence de départ
+Moyenne 3mois;2.971.993.191;;Croissance logique confirmée
+"Moyenne 7mois : =MOYENNE.SI(colonne_statut_7mois_mesure1;""Normal"";colonne_valeur_7mois_mesure1)";4.449.317.719;;croissance confirmée
 ;;;
 4. Cohérence chronologique des dates;;;
 ;;;
@@ -26,3 +26,4 @@ Maximum;16;;
 6. Cohérence Titre_tronque / Statut_evenement;;;
 ;;;
 Titre_tronque / Statut_evenement;0;;Règle de construction respectée
+Titre_tronque / Statut_evenement corrigé;149;;"Indicateur cohérent car l'indicatuer ""0"" a été mal formulée au début "
