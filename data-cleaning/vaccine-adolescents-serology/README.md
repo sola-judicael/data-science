@@ -1,4 +1,4 @@
-# Nettoyage de données — Étude vaccin chez des adolescents
+# Nettoyage de données : Étude vaccin chez des adolescents
 
 *English version below*
 
