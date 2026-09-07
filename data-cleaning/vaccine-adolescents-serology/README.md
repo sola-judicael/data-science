@@ -13,15 +13,18 @@ L'idée : montrer comment je m'y prends pour nettoyer des données quand il n'y 
 **D'où viennent les données** : d'une vraie étude sur un vaccin COVID chez des adolescents scolarisés, avec des prises de sang à 28 jours, 3 mois et 7 mois après la vaccination. Récupérées sur le dépôt [OxfordIHTM/messy-data](https://github.com/OxfordIHTM/messy-data), qui propose des données volontairement sales pour s'entraîner.
 
 **Dans ce dossier** :
-- **data/raw** — le fichier original, jamais touché
-- **data/clean** — les données nettoyées, en français et en anglais
-- **dictionary** — le dictionnaire des variables
-- **docs** — mon journal, où j'ai noté chaque étape et chaque décision
-- **outputs** — vide pour l'instant, les graphiques viendront plus tard
+- **data/raw** : le fichier original, jamais touché
+- **data/clean** : les données nettoyées, en français et en anglais
+- **dictionary** : le dictionnaire des variables
+- **docs** : mon journal, où j'ai noté chaque étape et chaque décision
+- **outputs** : vide pour l'instant, les graphiques viendront plus tard
+- **r_version** : même nettoyage en version R
 
 **Comment j'ai travaillé** : il n'y avait aucune documentation officielle sur les variables. J'ai dû reconstruire un dictionnaire moi-même, en regardant les vraies valeurs des colonnes, en cherchant le vocabulaire médical qui correspondait, et en vérifiant mes hypothèses en croisant plusieurs colonnes entre elles.
 
 Le nettoyage s'est fait en 7 étapes : renommer les colonnes, gérer les valeurs manquantes, séparer les cellules qui avaient 2 valeurs collées, gérer les codes bizarres et les valeurs limites, vérifier que chaque colonne avait le bon type, reconstruire une variable qui était vide à l'origine, et calculer quelques indicateurs pour vérifier que tout le nettoyage tenait la route. Le détail complet, action par action, est dans le journal : `docs/cleaning_journal_fr.csv`.
+
+Une fois le nettoyage fini sur Excel, je l'ai refait en R pour m'entraîner. Les résultats sont les mêmes qu'avec Excel (voir le dossier r-version)
 
 **Ce que j'ai trouvé intéressant en le faisant** :
 
@@ -46,15 +49,18 @@ The idea: show how I clean data when there's no documentation to lean on, and ho
 **Where the data comes from**: a real study on a COVID vaccine in school-aged adolescents, with blood tests at 28 days, 3 months, and 7 months after vaccination. Pulled from the [OxfordIHTM/messy-data](https://github.com/OxfordIHTM/messy-data) repository, which deliberately provides messy data for practice.
 
 **In this folder**:
-- **data/raw** — the original file, never touched
-- **data/clean** — the cleaned data, in French and English
-- **dictionary** — the variable dictionary
-- **docs** — my journal, where I noted every step and decision
-- **outputs** — empty for now, charts will come later
+- **data/raw** : the original file, never touched
+- **data/clean** : the cleaned data, in French and English
+- **dictionary** : the variable dictionary
+- **docs** : my journal, where I noted every step and decision
+- **outputs** : empty for now, charts will come later
+- **r_version** : the same cleaning redone in R
 
 **How I worked**: there was no official documentation for the variables. I had to rebuild a dictionary myself, by looking at the actual values in each column, matching them to standard medical vocabulary, and checking my guesses by cross-referencing several columns.
 
 The cleaning happened in 7 steps: renaming columns, handling missing values, splitting cells with two values stuck together, dealing with weird codes and threshold values, checking that every column had the right type, rebuilding a variable that was empty from the start, and calculating a few indicators to check the whole thing held up. Full detail, step by step, is in the journal: `docs/cleaning_journal_fr.csv` (French only).
+
+Once the Excel cleaning was done, I redid it in R to practice. Results match Excel (see the r-version folder)
 
 **Things I found interesting while doing this**:
 
