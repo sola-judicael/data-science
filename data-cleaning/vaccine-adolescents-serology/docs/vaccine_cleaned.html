@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Sola_Judicaël">
+<meta name="dcterms.date" content="2026-09-07">
+
+<title>Nettoyage de données — Étude vaccin adolescents (version R)</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="vaccine_cleaned_files/libs/clipboard/clipboard.min.js"></script>
+<script src="vaccine_cleaned_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="vaccine_cleaned_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="vaccine_cleaned_files/libs/quarto-html/popper.min.js"></script>
+<script src="vaccine_cleaned_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="vaccine_cleaned_files/libs/quarto-html/anchor.min.js"></script>
+<link href="vaccine_cleaned_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="vaccine_cleaned_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="vaccine_cleaned_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="vaccine_cleaned_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="vaccine_cleaned_files/libs/bootstrap/bootstrap-67270d1595a62d14f123c043d4fb2f18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#chargement-et-inspection-de-la-base" id="toc-chargement-et-inspection-de-la-base" class="nav-link" data-scroll-target="#chargement-et-inspection-de-la-base">Chargement et inspection de la base</a></li>
+  <li><a href="#sommaire-de-la-base-valeurs-manquantes" id="toc-sommaire-de-la-base-valeurs-manquantes" class="nav-link" data-scroll-target="#sommaire-de-la-base-valeurs-manquantes">Sommaire de la base : valeurs manquantes</a></li>
+  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a></li>
+  <li><a href="#nettoyage-renommage-des-colonnes" id="toc-nettoyage-renommage-des-colonnes" class="nav-link" data-scroll-target="#nettoyage-renommage-des-colonnes">Nettoyage : renommage des colonnes</a></li>
+  <li><a href="#nettoyage-valeurs-manquantes" id="toc-nettoyage-valeurs-manquantes" class="nav-link" data-scroll-target="#nettoyage-valeurs-manquantes">Nettoyage : valeurs manquantes</a></li>
+  <li><a href="#nettoyage-valeurs-dupliquées" id="toc-nettoyage-valeurs-dupliquées" class="nav-link" data-scroll-target="#nettoyage-valeurs-dupliquées">Nettoyage : valeurs dupliquées</a></li>
+  <li><a href="#nettoyage-censure-et-codes-spéciaux" id="toc-nettoyage-censure-et-codes-spéciaux" class="nav-link" data-scroll-target="#nettoyage-censure-et-codes-spéciaux">Nettoyage : censure et codes spéciaux</a></li>
+  <li><a href="#création-des-colonnes-_valeurs" id="toc-création-des-colonnes-_valeurs" class="nav-link" data-scroll-target="#création-des-colonnes-_valeurs">Création des colonnes “_valeurs”</a></li>
+  <li><a href="#nettoyage-recodage-des-résultats-qualitatifs-n-r" id="toc-nettoyage-recodage-des-résultats-qualitatifs-n-r" class="nav-link" data-scroll-target="#nettoyage-recodage-des-résultats-qualitatifs-n-r">Nettoyage : recodage des résultats qualitatifs (N, R, *, ?)</a></li>
+  <li><a href="#nettoyage-standardisation-catégorielle" id="toc-nettoyage-standardisation-catégorielle" class="nav-link" data-scroll-target="#nettoyage-standardisation-catégorielle">Nettoyage : standardisation catégorielle</a></li>
+  <li><a href="#vérification-des-types-de-données" id="toc-vérification-des-types-de-données" class="nav-link" data-scroll-target="#vérification-des-types-de-données">Vérification des types de données</a></li>
+  <li><a href="#construction-de-la-variable-dérivée-titre_tronque_derivee" id="toc-construction-de-la-variable-dérivée-titre_tronque_derivee" class="nav-link" data-scroll-target="#construction-de-la-variable-dérivée-titre_tronque_derivee">Construction de la variable dérivée : Titre_tronque_derivee</a></li>
+  <li><a href="#indicateurs-de-validation" id="toc-indicateurs-de-validation" class="nav-link" data-scroll-target="#indicateurs-de-validation">Indicateurs de validation</a></li>
+  <li><a href="#enregistrement" id="toc-enregistrement" class="nav-link" data-scroll-target="#enregistrement">Enregistrement</a></li>
+  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a></li>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Nettoyage de données — Étude vaccin adolescents (version R)</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Sola_Judicaël </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 7, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Ce document reproduit en R le nettoyage déjà réalisé et validé sur Excel pour ce même dataset (voir <code>dictionary/data_dictionary.csv</code> et <code>docs/cleaning_journal_fr.csv</code>). L’objectif est juste de traduire les décisions méthodologiques en code R reproductible, avec la même rigueur de vérification à chaque étape.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(naniar)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="chargement-et-inspection-de-la-base" class="level2">
+<h2 class="anchored" data-anchor-id="chargement-et-inspection-de-la-base">Chargement et inspection de la base</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>vaccine_raw <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"../data/raw/vaccine_raw.xlsx"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine_raw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 294  29</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 294
+Columns: 29
+$ D                               &lt;chr&gt; "US-050", "US-509", "US-063", "US-188"…
+$ Gender                          &lt;chr&gt; "F", "M", "F", "M", "M", "F", "F", "M"…
+$ BirthComor                      &lt;chr&gt; "NA", "N", "N", "NA", "NA", "Y", "N", …
+$ `BMI measure`                   &lt;dbl&gt; 22.8, 17.0, 14.4, 21.4, 33.2, 25.5, 17…
+$ BMI                             &lt;chr&gt; "Overweight", "Normal Weight", "Underw…
+$ Vacstat                         &lt;chr&gt; "Non Vaccinated", "Non Vaccinated", "N…
+$ `Date 1`                        &lt;dttm&gt; NA, NA, NA, NA, NA, NA, NA, NA, 2021-…
+$ `Date 2`                        &lt;dttm&gt; NA, NA, NA, NA, NA, NA, NA, NA, 2021-…
+$ Age                             &lt;dbl&gt; 12, 12, 12, 15, 15, 14, 12, 12, 15, 12…
+$ Class                           &lt;chr&gt; "S1", "S1", "S1", "S4", "S4", "S4", "S…
+$ `Infected prior to vaccination` &lt;chr&gt; "N", "N", "N", "N", "N", "N", "N", "N"…
+$ `Quantivac at 28 days`          &lt;chr&gt; "0.1679", "0.3747", "0.1022", "0.2861"…
+$ `Q 28 Result`                   &lt;chr&gt; "N", "N", "N", "N", "N", "N", "N", "N"…
+$ ODQ28Days                       &lt;dbl&gt; 0.031, 0.035, 0.037, 0.038, 0.038, 0.0…
+$ `NCPat28 days`                  &lt;chr&gt; "0.7099", "1.6594", "0.5253", "0.298",…
+$ N28Results                      &lt;chr&gt; "N", "R", "N", "N", "N", "N", "R", "R"…
+$ `Quantivacat3 months`           &lt;chr&gt; "&gt;120", "&gt;120", "&gt;120", "*****", "&gt;120…
+$ `Q3 Result`                     &lt;chr&gt; "R", "R", "R", "*", "R", "N", "R", "R"…
+$ ODQ4months                      &lt;dbl&gt; 0.958, 0.482, 0.857, 0.737, 3.392, 0.0…
+$ NCPat3months                    &lt;chr&gt; "6.4746", "6.2601", "0.2737", "2.0179"…
+$ N3Result                        &lt;chr&gt; "R", "R", "N", "R", "N", "N", "N", "R"…
+$ Quantivacat7months              &lt;chr&gt; "&gt;120", "&gt;120", "&gt;120", "&gt;120", "&gt;120"…
+$ Q7Result                        &lt;chr&gt; "R", "R", "R", "R", "R", "N", "R", "*"…
+$ ODQ7months                      &lt;dbl&gt; 0.589, 2.847, 0.499, 0.430, 3.200, 0.0…
+$ NCPat7months                    &lt;chr&gt; "3.3545", "2.3946", "0.1885", "0.6488"…
+$ N7Result                        &lt;chr&gt; "R", "R", "N", "N", "N", "N", "R", "R"…
+$ Time                            &lt;dbl&gt; 210, 210, 210, 210, 210, NA, 210, 210,…
+$ Status                          &lt;dbl&gt; 0, 0, 0, 0, 0, NA, 0, 0, 0, 0, 0, 0, 0…
+$ TruncatedTiter                  &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>      D                Gender           BirthComor         BMI measure   
+ Length:294         Length:294         Length:294         Min.   :12.40  
+ Class :character   Class :character   Class :character   1st Qu.:17.62  
+ Mode  :character   Mode  :character   Mode  :character   Median :20.30  
+                                                          Mean   :21.90  
+                                                          3rd Qu.:24.88  
+                                                          Max.   :42.20  
+                                                                         
+     BMI              Vacstat              Date 1                   
+ Length:294         Length:294         Min.   :2021-09-13 00:00:00  
+ Class :character   Class :character   1st Qu.:2021-09-14 00:00:00  
+ Mode  :character   Mode  :character   Median :2021-09-14 00:00:00  
+                                       Mean   :2021-09-14 12:44:12  
+                                       3rd Qu.:2021-09-14 00:00:00  
+                                       Max.   :2021-09-29 00:00:00  
+                                       NA's   :66                   
+     Date 2                         Age           Class          
+ Min.   :2021-10-07 00:00:00   Min.   :11.00   Length:294        
+ 1st Qu.:2021-10-07 00:00:00   1st Qu.:12.00   Class :character  
+ Median :2021-10-08 00:00:00   Median :12.00   Mode  :character  
+ Mean   :2021-10-08 10:00:00   Mean   :13.22                     
+ 3rd Qu.:2021-10-08 00:00:00   3rd Qu.:15.00                     
+ Max.   :2021-11-04 00:00:00   Max.   :16.00                     
+ NA's   :66                                                      
+ Infected prior to vaccination Quantivac at 28 days Q 28 Result       
+ Length:294                    Length:294           Length:294        
+ Class :character              Class :character     Class :character  
+ Mode  :character              Mode  :character     Mode  :character  
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+   ODQ28Days     NCPat28 days        N28Results        Quantivacat3 months
+ Min.   :0.031   Length:294         Length:294         Length:294         
+ 1st Qu.:3.066   Class :character   Class :character   Class :character   
+ Median :3.500   Mode  :character   Mode  :character   Mode  :character   
+ Mean   :2.819                                                            
+ 3rd Qu.:3.500                                                            
+ Max.   :3.500                                                            
+                                                                          
+  Q3 Result           ODQ4months    NCPat3months         N3Result        
+ Length:294         Min.   :0.033   Length:294         Length:294        
+ Class :character   1st Qu.:2.970   Class :character   Class :character  
+ Mode  :character   Median :3.325   Mode  :character   Mode  :character  
+                    Mean   :2.911                                        
+                    3rd Qu.:3.500                                        
+                    Max.   :3.500                                        
+                                                                         
+ Quantivacat7months   Q7Result           ODQ7months    NCPat7months      
+ Length:294         Length:294         Min.   :0.031   Length:294        
+ Class :character   Class :character   1st Qu.:2.675   Class :character  
+ Mode  :character   Mode  :character   Median :3.053   Mode  :character  
+                                       Mean   :2.821                     
+                                       3rd Qu.:3.472                     
+                                       Max.   :3.500                     
+                                                                         
+   N7Result              Time           Status        TruncatedTiter
+ Length:294         Min.   : 92.0   Min.   :0.00000   Mode:logical  
+ Class :character   1st Qu.:210.0   1st Qu.:0.00000   NA's:294      
+ Mode  :character   Median :210.0   Median :0.00000                 
+                    Mean   :206.1   Mean   :0.06727                 
+                    3rd Qu.:210.0   3rd Qu.:0.00000                 
+                    Max.   :210.0   Max.   :1.00000                 
+                    NA's   :71      NA's   :71                      </code></pre>
+</div>
+</div>
+</section>
+<section id="sommaire-de-la-base-valeurs-manquantes" class="level2">
+<h2 class="anchored" data-anchor-id="sommaire-de-la-base-valeurs-manquantes">Sommaire de la base : valeurs manquantes</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gg_miss_var</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="vaccine_cleaned_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">miss_var_summary</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 29 × 3
+   variable       n_miss pct_miss
+   &lt;chr&gt;           &lt;int&gt;    &lt;num&gt;
+ 1 TruncatedTiter    294    100  
+ 2 Time               71     24.1
+ 3 Status             71     24.1
+ 4 Date 1             66     22.4
+ 5 Date 2             66     22.4
+ 6 D                   0      0  
+ 7 Gender              0      0  
+ 8 BirthComor          0      0  
+ 9 BMI measure         0      0  
+10 BMI                 0      0  
+# ℹ 19 more rows</code></pre>
+</div>
+</div>
+<p>Constat identique à l’inspection Excel :</p>
+<ul>
+<li><p><code>TruncatedTiter</code> à 100% de manquants,</p></li>
+<li><p><code>Time</code>/<code>Status</code> à 24.1% de manquants,</p></li>
+<li><p><code>Date 1</code>/<code>Date 2</code> à 22.4% de manquants chacune</p></li>
+</ul>
+<p>On note que <code>BirthComor</code> n’apparaît pas encore ici car son “NA” est du texte, pas une vraie valeur manquante pour R à ce stade.</p>
+</section>
+<section id="documentation" class="level2">
+<h2 class="anchored" data-anchor-id="documentation">Documentation</h2>
+<p>Aucune documentation officielle n’accompagnait ce dataset. Le dictionnaire de données a été reconstruit par déduction (analyse des valeurs, vocabulaire de sérologie vaccinale, croisement de variables) lors du nettoyage Excel . Prière de voir <code>dictionary/data_dictionary.csv</code> pour le détail complet.</p>
+</section>
+<section id="nettoyage-renommage-des-colonnes" class="level2">
+<h2 class="anchored" data-anchor-id="nettoyage-renommage-des-colonnes">Nettoyage : renommage des colonnes</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "D"                             "Gender"                       
+ [3] "BirthComor"                    "BMI measure"                  
+ [5] "BMI"                           "Vacstat"                      
+ [7] "Date 1"                        "Date 2"                       
+ [9] "Age"                           "Class"                        
+[11] "Infected prior to vaccination" "Quantivac at 28 days"         
+[13] "Q 28 Result"                   "ODQ28Days"                    
+[15] "NCPat28 days"                  "N28Results"                   
+[17] "Quantivacat3 months"           "Q3 Result"                    
+[19] "ODQ4months"                    "NCPat3months"                 
+[21] "N3Result"                      "Quantivacat7months"           
+[23] "Q7Result"                      "ODQ7months"                   
+[25] "NCPat7months"                  "N7Result"                     
+[27] "Time"                          "Status"                       
+[29] "TruncatedTiter"               </code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">ID_sujet =</span> D,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sexe =</span> Gender,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Comorbidite_naissance =</span> BirthComor,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Valeur_IMC =</span> <span class="st">`</span><span class="at">BMI measure</span><span class="st">`</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Classe_IMC =</span> BMI,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Statut_vaccinal =</span> Vacstat,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date_dose1 =</span> <span class="st">`</span><span class="at">Date 1</span><span class="st">`</span>,</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date_dose2 =</span> <span class="st">`</span><span class="at">Date 2</span><span class="st">`</span>,</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">Age =</span> Age,</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">Classe_scolaire =</span> Class,</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">Infection_anterieure =</span> <span class="st">`</span><span class="at">Infected prior to vaccination</span><span class="st">`</span>,</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_28j =</span> <span class="st">`</span><span class="at">Quantivac at 28 days</span><span class="st">`</span>,</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_qual_28j =</span> <span class="st">`</span><span class="at">Q 28 Result</span><span class="st">`</span>,</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">DensiteOptique_28j =</span> ODQ28Days,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_28j =</span> <span class="st">`</span><span class="at">NCPat28 days</span><span class="st">`</span>,</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_neutralisation_28j =</span> N28Results,</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_3mois =</span> <span class="st">`</span><span class="at">Quantivacat3 months</span><span class="st">`</span>,</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_qual_3mois =</span> <span class="st">`</span><span class="at">Q3 Result</span><span class="st">`</span>,</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">DensiteOptique_3mois =</span> ODQ4months,</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_3mois =</span> NCPat3months,</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_neutralisation_3mois =</span> N3Result,</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_7mois =</span> <span class="st">`</span><span class="at">Quantivacat7months</span><span class="st">`</span>,</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_qual_7mois =</span> Q7Result,</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">DensiteOptique_7mois =</span> ODQ7months,</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_7mois =</span> NCPat7months,</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_neutralisation_7mois =</span> N7Result,</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">Temps_suivi_jours =</span> Time,</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">Statut_evenement =</span> Status,</span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_tronque =</span> TruncatedTiter</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "ID_sujet"                      "Sexe"                         
+ [3] "Comorbidite_naissance"         "Valeur_IMC"                   
+ [5] "Classe_IMC"                    "Statut_vaccinal"              
+ [7] "Date_dose1"                    "Date_dose2"                   
+ [9] "Age"                           "Classe_scolaire"              
+[11] "Infection_anterieure"          "Titre_AC_28j"                 
+[13] "Resultat_qual_28j"             "DensiteOptique_28j"           
+[15] "CapaciteNeutralisation_28j"    "Resultat_neutralisation_28j"  
+[17] "Titre_AC_3mois"                "Resultat_qual_3mois"          
+[19] "DensiteOptique_3mois"          "CapaciteNeutralisation_3mois" 
+[21] "Resultat_neutralisation_3mois" "Titre_AC_7mois"               
+[23] "Resultat_qual_7mois"           "DensiteOptique_7mois"         
+[25] "CapaciteNeutralisation_7mois"  "Resultat_neutralisation_7mois"
+[27] "Temps_suivi_jours"             "Statut_evenement"             
+[29] "Titre_tronque"                </code></pre>
+</div>
+</div>
+</section>
+<section id="nettoyage-valeurs-manquantes" class="level2">
+<h2 class="anchored" data-anchor-id="nettoyage-valeurs-manquantes">Nettoyage : valeurs manquantes</h2>
+<p>Variables concernées : <code>Comorbidite_naissance</code>, <code>Date_dose1</code>, <code>Date_dose2</code>.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Comorbidite_naissance, Date_dose1, Date_dose2) <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 294
+Columns: 3
+$ Comorbidite_naissance &lt;chr&gt; "NA", "N", "N", "NA", "NA", "Y", "N", "NA", "Y",…
+$ Date_dose1            &lt;dttm&gt; NA, NA, NA, NA, NA, NA, NA, NA, 2021-09-14, NA,…
+$ Date_dose2            &lt;dttm&gt; NA, NA, NA, NA, NA, NA, NA, NA, 2021-10-07, NA,…</code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Comorbidite_naissance =</span> <span class="fu">na_if</span>(Comorbidite_naissance, <span class="st">"NA"</span>))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Comorbidite_naissance, Date_dose1, Date_dose2) <span class="sc">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 294
+Columns: 3
+$ Comorbidite_naissance &lt;chr&gt; NA, "N", "N", NA, NA, "Y", "N", NA, "Y", NA, "N"…
+$ Date_dose1            &lt;dttm&gt; NA, NA, NA, NA, NA, NA, NA, NA, 2021-09-14, NA,…
+$ Date_dose2            &lt;dttm&gt; NA, NA, NA, NA, NA, NA, NA, NA, 2021-10-07, NA,…</code></pre>
+</div>
+</div>
+<p>Contrairement à Excel, <code>readxl</code> convertit automatiquement les erreurs <code>#N/A</code> en vrai <code>NA</code> à l’import. <code>Date_dose1</code>/<code>Date_dose2</code> n’ont donc nécessité aucun traitement supplémentaire. Seul le “NA” en texte de <code>Comorbidite_naissance</code> a demandé un <code>na_if()</code>.</p>
+</section>
+<section id="nettoyage-valeurs-dupliquées" class="level2">
+<h2 class="anchored" data-anchor-id="nettoyage-valeurs-dupliquées">Nettoyage : valeurs dupliquées</h2>
+<p>Variables concernées : <code>CapaciteNeutralisation_(28j, 3mois, 7mois)</code> et <code>Titre_AC_7mois</code>.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(CapaciteNeutralisation_28j, CapaciteNeutralisation_3mois, CapaciteNeutralisation_7mois, Titre_AC_7mois) <span class="sc">%&gt;%</span> </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 294
+Columns: 4
+$ CapaciteNeutralisation_28j   &lt;chr&gt; "0.7099", "1.6594", "0.5253", "0.298", "0…
+$ CapaciteNeutralisation_3mois &lt;chr&gt; "6.4746", "6.2601", "0.2737", "2.0179", "…
+$ CapaciteNeutralisation_7mois &lt;chr&gt; "3.3545", "2.3946", "0.1885", "0.6488", "…
+$ Titre_AC_7mois               &lt;chr&gt; "&gt;120", "&gt;120", "&gt;120", "&gt;120", "&gt;120", "…</code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(CapaciteNeutralisation_28j, </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"CapaciteNeutralisation_28j_mesure1"</span>, <span class="st">"CapaciteNeutralisation_28j_mesure2"</span>),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">sep =</span> <span class="st">"/"</span>, <span class="at">fill =</span> <span class="st">"right"</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(CapaciteNeutralisation_3mois, </span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"CapaciteNeutralisation_3mois_mesure1"</span>, <span class="st">"CapaciteNeutralisation_3mois_mesure2"</span>),</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">sep =</span> <span class="st">"/"</span>, <span class="at">fill =</span> <span class="st">"right"</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(CapaciteNeutralisation_7mois, </span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>           <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"CapaciteNeutralisation_7mois_mesure1"</span>, <span class="st">"CapaciteNeutralisation_7mois_mesure2"</span>),</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>           <span class="at">sep =</span> <span class="st">"/"</span>, <span class="at">fill =</span> <span class="st">"right"</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(Titre_AC_7mois, </span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>           <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"Titre_AC_7mois_mesure1"</span>, <span class="st">"Titre_AC_7mois_mesure2"</span>),</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>           <span class="at">sep =</span> <span class="st">"/"</span>, <span class="at">fill =</span> <span class="st">"right"</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(CapaciteNeutralisation_28j_mesure1, CapaciteNeutralisation_28j_mesure2,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>         CapaciteNeutralisation_3mois_mesure1, CapaciteNeutralisation_3mois_mesure2,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>         CapaciteNeutralisation_7mois_mesure1, CapaciteNeutralisation_7mois_mesure2) <span class="sc">%&gt;%</span> </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 294
+Columns: 6
+$ CapaciteNeutralisation_28j_mesure1   &lt;chr&gt; "0.7099", "1.6594", "0.5253", "0.…
+$ CapaciteNeutralisation_28j_mesure2   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, N…
+$ CapaciteNeutralisation_3mois_mesure1 &lt;chr&gt; "6.4746", "6.2601", "0.2737", "2.…
+$ CapaciteNeutralisation_3mois_mesure2 &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, N…
+$ CapaciteNeutralisation_7mois_mesure1 &lt;chr&gt; "3.3545", "2.3946", "0.1885", "0.…
+$ CapaciteNeutralisation_7mois_mesure2 &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "1.88…</code></pre>
+</div>
+</div>
+</section>
+<section id="nettoyage-censure-et-codes-spéciaux" class="level2">
+<h2 class="anchored" data-anchor-id="nettoyage-censure-et-codes-spéciaux">Nettoyage : censure et codes spéciaux</h2>
+<p>Les colonnes d’origine mélangeaient valeurs numériques réelles et codes texte (<code>"&gt;120"</code>, <code>"*****"</code>). Création de deux nouvelles colonnes par variable, <code>_statut</code> et <code>_valeur</code>, pour conserver l’information qualitative plutôt que de la supprimer ou d’inventer une valeur.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Titre_AC_28j, Titre_AC_3mois, Titre_AC_7mois_mesure1, Titre_AC_7mois_mesure2) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 136 × 4
+   Titre_AC_28j Titre_AC_3mois Titre_AC_7mois_mesure1 Titre_AC_7mois_mesure2
+   &lt;chr&gt;        &lt;chr&gt;          &lt;chr&gt;                  &lt;chr&gt;                 
+ 1 0.1679       &gt;120           &gt;120                   &lt;NA&gt;                  
+ 2 0.3747       &gt;120           &gt;120                   &lt;NA&gt;                  
+ 3 0.1022       &gt;120           &gt;120                   &lt;NA&gt;                  
+ 4 0.2861       *****          &gt;120                   &lt;NA&gt;                  
+ 5 0.3317       &gt;120           &gt;120                   &lt;NA&gt;                  
+ 6 0.2117       0.2649         0.0426                 &lt;NA&gt;                  
+ 7 0.1797       &gt;120           &gt;120                   &lt;NA&gt;                  
+ 8 0.2709       &gt;120           *****                  &lt;NA&gt;                  
+ 9 4.4375       &gt;120           *****                  &lt;NA&gt;                  
+10 0.2937       *****          &gt;120                   &lt;NA&gt;                  
+# ℹ 126 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_28j_statut =</span> <span class="fu">case_when</span>(</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Titre_AC_28j) <span class="sc">~</span> <span class="st">"Manquant"</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_starts</span>(Titre_AC_28j, <span class="st">"&gt;"</span>) <span class="sc">~</span> <span class="st">"Censure haute"</span>,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>      Titre_AC_28j <span class="sc">==</span> <span class="st">"*****"</span> <span class="sc">~</span> <span class="st">"Non testé"</span>,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Normal"</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_3mois_statut =</span> <span class="fu">case_when</span>(</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Titre_AC_3mois) <span class="sc">~</span> <span class="st">"Manquant"</span>,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_starts</span>(Titre_AC_3mois, <span class="st">"&gt;"</span>) <span class="sc">~</span> <span class="st">"Censure haute"</span>,</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>      Titre_AC_3mois <span class="sc">==</span> <span class="st">"*****"</span> <span class="sc">~</span> <span class="st">"Non testé"</span>,</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Normal"</span></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_7mois_mesure1_statut =</span> <span class="fu">case_when</span>(</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Titre_AC_7mois_mesure1) <span class="sc">~</span> <span class="st">"Manquant"</span>,</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_starts</span>(Titre_AC_7mois_mesure1, <span class="st">"&gt;"</span>) <span class="sc">~</span> <span class="st">"Censure haute"</span>,</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>      Titre_AC_7mois_mesure1 <span class="sc">==</span> <span class="st">"*****"</span> <span class="sc">~</span> <span class="st">"Non testé"</span>,</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Normal"</span></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_7mois_mesure2_statut =</span> <span class="fu">case_when</span>(</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Titre_AC_7mois_mesure2) <span class="sc">~</span> <span class="st">"Manquant"</span>,</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_starts</span>(Titre_AC_7mois_mesure2, <span class="st">"&gt;"</span>) <span class="sc">~</span> <span class="st">"Censure haute"</span>,</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>      Titre_AC_7mois_mesure2 <span class="sc">==</span> <span class="st">"*****"</span> <span class="sc">~</span> <span class="st">"Non testé"</span>,</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Normal"</span></span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Titre_AC_28j, Titre_AC_28j_statut, Titre_AC_3mois, Titre_AC_3mois_statut,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>         Titre_AC_7mois_mesure1, Titre_AC_7mois_mesure1_statut, Titre_AC_7mois_mesure2,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>         Titre_AC_7mois_mesure2_statut) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 136 × 8
+   Titre_AC_28j Titre_AC_28j_statut Titre_AC_3mois Titre_AC_3mois_statut
+   &lt;chr&gt;        &lt;chr&gt;               &lt;chr&gt;          &lt;chr&gt;                
+ 1 0.1679       Normal              &gt;120           Censure haute        
+ 2 0.3747       Normal              &gt;120           Censure haute        
+ 3 0.1022       Normal              &gt;120           Censure haute        
+ 4 0.2861       Normal              *****          Non testé            
+ 5 0.3317       Normal              &gt;120           Censure haute        
+ 6 0.2117       Normal              0.2649         Normal               
+ 7 0.1797       Normal              &gt;120           Censure haute        
+ 8 0.2709       Normal              &gt;120           Censure haute        
+ 9 4.4375       Normal              &gt;120           Censure haute        
+10 0.2937       Normal              *****          Non testé            
+# ℹ 126 more rows
+# ℹ 4 more variables: Titre_AC_7mois_mesure1 &lt;chr&gt;,
+#   Titre_AC_7mois_mesure1_statut &lt;chr&gt;, Titre_AC_7mois_mesure2 &lt;chr&gt;,
+#   Titre_AC_7mois_mesure2_statut &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>Le test <code>is.na()</code> en premier dans <code>case_when()</code> sert surtout pour <code>Titre_AC_7mois_mesure2</code>. Après séparation des cellules “x/y” avec <code>fill = "right"</code>, la plupart des sujets n’avaient qu’une seule mesure, donc <code>mesure2</code> est vide pour eux. Ces cas doivent donc ressortir “Manquant”, pour ne pas être classés à tort en “Normal” (piège déjà rencontré sur Excel).</p>
+<p>Sur <code>Titre_AC_28j</code>/<code>3mois</code>/<code>7mois_mesure1</code>, “Manquant” doit rester à 0, ces colonnes n’ayant aucune vraie cellule vide à l’origine.</p>
+</section>
+<section id="création-des-colonnes-_valeurs" class="level2">
+<h2 class="anchored" data-anchor-id="création-des-colonnes-_valeurs">Création des colonnes “_valeurs”</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_28j_valeur =</span> <span class="fu">as.numeric</span>(Titre_AC_28j),</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_3mois_valeur =</span> <span class="fu">as.numeric</span>(Titre_AC_3mois),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_7mois_mesure1_valeur =</span> <span class="fu">as.numeric</span>(Titre_AC_7mois_mesure1),</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_AC_7mois_mesure2_valeur =</span> <span class="fu">as.numeric</span>(Titre_AC_7mois_mesure2)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Titre_AC_28j, Titre_AC_28j_valeur, Titre_AC_3mois, Titre_AC_3mois_valeur,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>         Titre_AC_7mois_mesure1, Titre_AC_7mois_mesure1_valeur, Titre_AC_7mois_mesure2,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>         Titre_AC_7mois_mesure2_valeur) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 136 × 8
+   Titre_AC_28j Titre_AC_28j_valeur Titre_AC_3mois Titre_AC_3mois_valeur
+   &lt;chr&gt;                      &lt;dbl&gt; &lt;chr&gt;                          &lt;dbl&gt;
+ 1 0.1679                     0.168 &gt;120                          NA    
+ 2 0.3747                     0.375 &gt;120                          NA    
+ 3 0.1022                     0.102 &gt;120                          NA    
+ 4 0.2861                     0.286 *****                         NA    
+ 5 0.3317                     0.332 &gt;120                          NA    
+ 6 0.2117                     0.212 0.2649                         0.265
+ 7 0.1797                     0.180 &gt;120                          NA    
+ 8 0.2709                     0.271 &gt;120                          NA    
+ 9 4.4375                     4.44  &gt;120                          NA    
+10 0.2937                     0.294 *****                         NA    
+# ℹ 126 more rows
+# ℹ 4 more variables: Titre_AC_7mois_mesure1 &lt;chr&gt;,
+#   Titre_AC_7mois_mesure1_valeur &lt;dbl&gt;, Titre_AC_7mois_mesure2 &lt;chr&gt;,
+#   Titre_AC_7mois_mesure2_valeur &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p>Les avertissements <em>“NAs introduits lors de la conversion automatique”</em> sont normaux et attendus ici : <code>as.numeric()</code> transforme les codes texte (<code>"&gt;120"</code>, <code>"*****"</code>) en <code>NA</code>, exactement l’équivalent du <code>SIERREUR(CNUM(...))</code> utilisé sur Excel. Ce n’est pas une erreur à corriger.</p>
+</section>
+<section id="nettoyage-recodage-des-résultats-qualitatifs-n-r" class="level2">
+<h2 class="anchored" data-anchor-id="nettoyage-recodage-des-résultats-qualitatifs-n-r">Nettoyage : recodage des résultats qualitatifs (N, R, *, ?)</h2>
+<p>Sur Excel, par validation croisée, nous avons pu confirmer que <code>*</code> correspond systématiquement à un test non réalisé, pas à un échec technique.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_qual_28j =</span> <span class="fu">case_when</span>(</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_28j <span class="sc">==</span> <span class="st">"N"</span> <span class="sc">~</span> <span class="st">"Négatif"</span>,</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_28j <span class="sc">==</span> <span class="st">"R"</span> <span class="sc">~</span> <span class="st">"Réactif"</span>,</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_28j <span class="sc">==</span> <span class="st">"*"</span> <span class="sc">~</span> <span class="st">"Non testé"</span>,</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_28j <span class="sc">==</span> <span class="st">"?"</span> <span class="sc">~</span> <span class="st">"Incertain"</span>,</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Resultat_qual_28j</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_qual_3mois =</span> <span class="fu">case_when</span>(</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_3mois <span class="sc">==</span> <span class="st">"N"</span> <span class="sc">~</span> <span class="st">"Négatif"</span>,</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_3mois <span class="sc">==</span> <span class="st">"R"</span> <span class="sc">~</span> <span class="st">"Réactif"</span>,</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_3mois <span class="sc">==</span> <span class="st">"*"</span> <span class="sc">~</span> <span class="st">"Non testé"</span>,</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_3mois <span class="sc">==</span> <span class="st">"?"</span> <span class="sc">~</span> <span class="st">"Incertain"</span>,</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Resultat_qual_3mois</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_qual_7mois =</span> <span class="fu">case_when</span>(</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_7mois <span class="sc">==</span> <span class="st">"N"</span> <span class="sc">~</span> <span class="st">"Négatif"</span>,</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_7mois <span class="sc">==</span> <span class="st">"R"</span> <span class="sc">~</span> <span class="st">"Réactif"</span>,</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_7mois <span class="sc">==</span> <span class="st">"*"</span> <span class="sc">~</span> <span class="st">"Non testé"</span>,</span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>      Resultat_qual_7mois <span class="sc">==</span> <span class="st">"?"</span> <span class="sc">~</span> <span class="st">"Incertain"</span>,</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Resultat_qual_7mois</span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb33-25"><a href="#cb33-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-26"><a href="#cb33-26" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb33-27"><a href="#cb33-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Resultat_qual_28j, Resultat_qual_3mois, Resultat_qual_7mois) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-28"><a href="#cb33-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 294
+Columns: 3
+$ Resultat_qual_28j   &lt;chr&gt; "Négatif", "Négatif", "Négatif", "Négatif", "Négat…
+$ Resultat_qual_3mois &lt;chr&gt; "Réactif", "Réactif", "Réactif", "Non testé", "Réa…
+$ Resultat_qual_7mois &lt;chr&gt; "Réactif", "Réactif", "Réactif", "Réactif", "Réact…</code></pre>
+</div>
+</div>
+</section>
+<section id="nettoyage-standardisation-catégorielle" class="level2">
+<h2 class="anchored" data-anchor-id="nettoyage-standardisation-catégorielle">Nettoyage : standardisation catégorielle</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sexe =</span> <span class="fu">case_when</span>(</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>      Sexe <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> <span class="st">"Femme"</span>,</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>      Sexe <span class="sc">==</span> <span class="st">"M"</span> <span class="sc">~</span> <span class="st">"Homme"</span>,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Sexe</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Comorbidite_naissance =</span> <span class="fu">case_when</span>(</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>      Comorbidite_naissance <span class="sc">==</span> <span class="st">"Y"</span> <span class="sc">~</span> <span class="st">"Oui"</span>,</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>      Comorbidite_naissance <span class="sc">==</span> <span class="st">"N"</span> <span class="sc">~</span> <span class="st">"Non"</span>,</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Comorbidite_naissance</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">Infection_anterieure =</span> <span class="fu">case_when</span>(</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>      Infection_anterieure <span class="sc">==</span> <span class="st">"N"</span> <span class="sc">~</span> <span class="st">"Négatif"</span>,</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>      Infection_anterieure <span class="sc">==</span> <span class="st">"R"</span> <span class="sc">~</span> <span class="st">"Réactif"</span>,</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Infection_anterieure</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_neutralisation_28j =</span> <span class="fu">case_when</span>(</span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>      Resultat_neutralisation_28j <span class="sc">==</span> <span class="st">"N"</span> <span class="sc">~</span> <span class="st">"Négatif"</span>,</span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>      Resultat_neutralisation_28j <span class="sc">==</span> <span class="st">"R"</span> <span class="sc">~</span> <span class="st">"Réactif"</span>,</span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Resultat_neutralisation_28j</span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_neutralisation_3mois =</span> <span class="fu">case_when</span>(</span>
+<span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a>      Resultat_neutralisation_3mois <span class="sc">==</span> <span class="st">"N"</span> <span class="sc">~</span> <span class="st">"Négatif"</span>,</span>
+<span id="cb35-25"><a href="#cb35-25" aria-hidden="true" tabindex="-1"></a>      Resultat_neutralisation_3mois <span class="sc">==</span> <span class="st">"R"</span> <span class="sc">~</span> <span class="st">"Réactif"</span>,</span>
+<span id="cb35-26"><a href="#cb35-26" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Resultat_neutralisation_3mois</span>
+<span id="cb35-27"><a href="#cb35-27" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb35-28"><a href="#cb35-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">Resultat_neutralisation_7mois =</span> <span class="fu">case_when</span>(</span>
+<span id="cb35-29"><a href="#cb35-29" aria-hidden="true" tabindex="-1"></a>      Resultat_neutralisation_7mois <span class="sc">==</span> <span class="st">"N"</span> <span class="sc">~</span> <span class="st">"Négatif"</span>,</span>
+<span id="cb35-30"><a href="#cb35-30" aria-hidden="true" tabindex="-1"></a>      Resultat_neutralisation_7mois <span class="sc">==</span> <span class="st">"R"</span> <span class="sc">~</span> <span class="st">"Réactif"</span>,</span>
+<span id="cb35-31"><a href="#cb35-31" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Resultat_neutralisation_7mois</span>
+<span id="cb35-32"><a href="#cb35-32" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb35-33"><a href="#cb35-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">Classe_IMC =</span> <span class="fu">case_when</span>(</span>
+<span id="cb35-34"><a href="#cb35-34" aria-hidden="true" tabindex="-1"></a>      Classe_IMC <span class="sc">==</span> <span class="st">"Overweight"</span> <span class="sc">~</span> <span class="st">"Surpoids"</span>,</span>
+<span id="cb35-35"><a href="#cb35-35" aria-hidden="true" tabindex="-1"></a>      Classe_IMC <span class="sc">==</span> <span class="st">"Normal Weight"</span> <span class="sc">~</span> <span class="st">"Poids normal"</span>,</span>
+<span id="cb35-36"><a href="#cb35-36" aria-hidden="true" tabindex="-1"></a>      Classe_IMC <span class="sc">==</span> <span class="st">"Underweight"</span> <span class="sc">~</span> <span class="st">"Insuffisance pondérale"</span>,</span>
+<span id="cb35-37"><a href="#cb35-37" aria-hidden="true" tabindex="-1"></a>      Classe_IMC <span class="sc">==</span> <span class="st">"Obese"</span> <span class="sc">~</span> <span class="st">"Obésité"</span>,</span>
+<span id="cb35-38"><a href="#cb35-38" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Classe_IMC</span>
+<span id="cb35-39"><a href="#cb35-39" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb35-40"><a href="#cb35-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">Statut_vaccinal =</span> <span class="fu">case_when</span>(</span>
+<span id="cb35-41"><a href="#cb35-41" aria-hidden="true" tabindex="-1"></a>      Statut_vaccinal <span class="sc">==</span> <span class="st">"Vaccinated"</span> <span class="sc">~</span> <span class="st">"Vacciné"</span>,</span>
+<span id="cb35-42"><a href="#cb35-42" aria-hidden="true" tabindex="-1"></a>      Statut_vaccinal <span class="sc">==</span> <span class="st">"Non Vaccinated"</span> <span class="sc">~</span> <span class="st">"Non vacciné"</span>,</span>
+<span id="cb35-43"><a href="#cb35-43" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> Statut_vaccinal</span>
+<span id="cb35-44"><a href="#cb35-44" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb35-45"><a href="#cb35-45" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb35-46"><a href="#cb35-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-47"><a href="#cb35-47" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 294
+Columns: 45
+$ ID_sujet                             &lt;chr&gt; "US-050", "US-509", "US-063", "US…
+$ Sexe                                 &lt;chr&gt; "Femme", "Homme", "Femme", "Homme…
+$ Comorbidite_naissance                &lt;chr&gt; NA, "Non", "Non", NA, NA, "Oui", …
+$ Valeur_IMC                           &lt;dbl&gt; 22.8, 17.0, 14.4, 21.4, 33.2, 25.…
+$ Classe_IMC                           &lt;chr&gt; "Surpoids", "Poids normal", "Insu…
+$ Statut_vaccinal                      &lt;chr&gt; "Non vacciné", "Non vacciné", "No…
+$ Date_dose1                           &lt;dttm&gt; NA, NA, NA, NA, NA, NA, NA, NA, …
+$ Date_dose2                           &lt;dttm&gt; NA, NA, NA, NA, NA, NA, NA, NA, …
+$ Age                                  &lt;dbl&gt; 12, 12, 12, 15, 15, 14, 12, 12, 1…
+$ Classe_scolaire                      &lt;chr&gt; "S1", "S1", "S1", "S4", "S4", "S4…
+$ Infection_anterieure                 &lt;chr&gt; "Négatif", "Négatif", "Négatif", …
+$ Titre_AC_28j                         &lt;chr&gt; "0.1679", "0.3747", "0.1022", "0.…
+$ Resultat_qual_28j                    &lt;chr&gt; "Négatif", "Négatif", "Négatif", …
+$ DensiteOptique_28j                   &lt;dbl&gt; 0.031, 0.035, 0.037, 0.038, 0.038…
+$ CapaciteNeutralisation_28j           &lt;chr&gt; "0.7099", "1.6594", "0.5253", "0.…
+$ CapaciteNeutralisation_28j_mesure1   &lt;chr&gt; "0.7099", "1.6594", "0.5253", "0.…
+$ CapaciteNeutralisation_28j_mesure2   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, N…
+$ Resultat_neutralisation_28j          &lt;chr&gt; "Négatif", "Réactif", "Négatif", …
+$ Titre_AC_3mois                       &lt;chr&gt; "&gt;120", "&gt;120", "&gt;120", "*****", …
+$ Resultat_qual_3mois                  &lt;chr&gt; "Réactif", "Réactif", "Réactif", …
+$ DensiteOptique_3mois                 &lt;dbl&gt; 0.958, 0.482, 0.857, 0.737, 3.392…
+$ CapaciteNeutralisation_3mois         &lt;chr&gt; "6.4746", "6.2601", "0.2737", "2.…
+$ CapaciteNeutralisation_3mois_mesure1 &lt;chr&gt; "6.4746", "6.2601", "0.2737", "2.…
+$ CapaciteNeutralisation_3mois_mesure2 &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, N…
+$ Resultat_neutralisation_3mois        &lt;chr&gt; "Réactif", "Réactif", "Négatif", …
+$ Titre_AC_7mois                       &lt;chr&gt; "&gt;120", "&gt;120", "&gt;120", "&gt;120", "…
+$ Titre_AC_7mois_mesure1               &lt;chr&gt; "&gt;120", "&gt;120", "&gt;120", "&gt;120", "…
+$ Titre_AC_7mois_mesure2               &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, N…
+$ Resultat_qual_7mois                  &lt;chr&gt; "Réactif", "Réactif", "Réactif", …
+$ DensiteOptique_7mois                 &lt;dbl&gt; 0.589, 2.847, 0.499, 0.430, 3.200…
+$ CapaciteNeutralisation_7mois         &lt;chr&gt; "3.3545", "2.3946", "0.1885", "0.…
+$ CapaciteNeutralisation_7mois_mesure1 &lt;chr&gt; "3.3545", "2.3946", "0.1885", "0.…
+$ CapaciteNeutralisation_7mois_mesure2 &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "1.88…
+$ Resultat_neutralisation_7mois        &lt;chr&gt; "Réactif", "Réactif", "Négatif", …
+$ Temps_suivi_jours                    &lt;dbl&gt; 210, 210, 210, 210, 210, NA, 210,…
+$ Statut_evenement                     &lt;dbl&gt; 0, 0, 0, 0, 0, NA, 0, 0, 0, 0, 0,…
+$ Titre_tronque                        &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, N…
+$ Titre_AC_28j_statut                  &lt;chr&gt; "Normal", "Normal", "Normal", "No…
+$ Titre_AC_3mois_statut                &lt;chr&gt; "Censure haute", "Censure haute",…
+$ Titre_AC_7mois_mesure1_statut        &lt;chr&gt; "Censure haute", "Censure haute",…
+$ Titre_AC_7mois_mesure2_statut        &lt;chr&gt; "Manquant", "Manquant", "Manquant…
+$ Titre_AC_28j_valeur                  &lt;dbl&gt; 0.1679, 0.3747, 0.1022, 0.2861, 0…
+$ Titre_AC_3mois_valeur                &lt;dbl&gt; NA, NA, NA, NA, NA, 0.2649, NA, N…
+$ Titre_AC_7mois_mesure1_valeur        &lt;dbl&gt; NA, NA, NA, NA, NA, 0.0426, NA, N…
+$ Titre_AC_7mois_mesure2_valeur        &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, N…</code></pre>
+</div>
+</div>
+</section>
+<section id="vérification-des-types-de-données" class="level2">
+<h2 class="anchored" data-anchor-id="vérification-des-types-de-données">Vérification des types de données</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(vaccine, class)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$ID_sujet
+[1] "character"
+
+$Sexe
+[1] "character"
+
+$Comorbidite_naissance
+[1] "character"
+
+$Valeur_IMC
+[1] "numeric"
+
+$Classe_IMC
+[1] "character"
+
+$Statut_vaccinal
+[1] "character"
+
+$Date_dose1
+[1] "POSIXct" "POSIXt" 
+
+$Date_dose2
+[1] "POSIXct" "POSIXt" 
+
+$Age
+[1] "numeric"
+
+$Classe_scolaire
+[1] "character"
+
+$Infection_anterieure
+[1] "character"
+
+$Titre_AC_28j
+[1] "character"
+
+$Resultat_qual_28j
+[1] "character"
+
+$DensiteOptique_28j
+[1] "numeric"
+
+$CapaciteNeutralisation_28j
+[1] "character"
+
+$CapaciteNeutralisation_28j_mesure1
+[1] "character"
+
+$CapaciteNeutralisation_28j_mesure2
+[1] "character"
+
+$Resultat_neutralisation_28j
+[1] "character"
+
+$Titre_AC_3mois
+[1] "character"
+
+$Resultat_qual_3mois
+[1] "character"
+
+$DensiteOptique_3mois
+[1] "numeric"
+
+$CapaciteNeutralisation_3mois
+[1] "character"
+
+$CapaciteNeutralisation_3mois_mesure1
+[1] "character"
+
+$CapaciteNeutralisation_3mois_mesure2
+[1] "character"
+
+$Resultat_neutralisation_3mois
+[1] "character"
+
+$Titre_AC_7mois
+[1] "character"
+
+$Titre_AC_7mois_mesure1
+[1] "character"
+
+$Titre_AC_7mois_mesure2
+[1] "character"
+
+$Resultat_qual_7mois
+[1] "character"
+
+$DensiteOptique_7mois
+[1] "numeric"
+
+$CapaciteNeutralisation_7mois
+[1] "character"
+
+$CapaciteNeutralisation_7mois_mesure1
+[1] "character"
+
+$CapaciteNeutralisation_7mois_mesure2
+[1] "character"
+
+$Resultat_neutralisation_7mois
+[1] "character"
+
+$Temps_suivi_jours
+[1] "numeric"
+
+$Statut_evenement
+[1] "numeric"
+
+$Titre_tronque
+[1] "logical"
+
+$Titre_AC_28j_statut
+[1] "character"
+
+$Titre_AC_3mois_statut
+[1] "character"
+
+$Titre_AC_7mois_mesure1_statut
+[1] "character"
+
+$Titre_AC_7mois_mesure2_statut
+[1] "character"
+
+$Titre_AC_28j_valeur
+[1] "numeric"
+
+$Titre_AC_3mois_valeur
+[1] "numeric"
+
+$Titre_AC_7mois_mesure1_valeur
+[1] "numeric"
+
+$Titre_AC_7mois_mesure2_valeur
+[1] "numeric"</code></pre>
+</div>
+</div>
+<p>La quasi-totalité des colonnes ont le bon type après les étapes précédentes.</p>
+<p>Nous notons cependant que les 6 colonnes <code>CapaciteNeutralisation_..._mesure1/2</code> (restées en <code>character</code>, car nous n’avons pas inclut la conversion automatique dans les arguments de <code>separate()</code>).</p>
+<p>Les colonnes d’origine (dont sont issues les nouvelles colonnes <em>status/</em>valeurs et mesures) conservées (<code>remove = FALSE</code>) restent volontairement en <code>character</code>.</p>
+<p>Aussi <code>Titre_tronque</code> en <code>logical</code> car colonne 100% vide à l’origine (Elle est traitée à l’étape suivante lors de sa reconstruction).</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_28j_mesure1 =</span> <span class="fu">as.numeric</span>(CapaciteNeutralisation_28j_mesure1),</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_28j_mesure2 =</span> <span class="fu">as.numeric</span>(CapaciteNeutralisation_28j_mesure2),</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_3mois_mesure1 =</span> <span class="fu">as.numeric</span>(CapaciteNeutralisation_3mois_mesure1),</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_3mois_mesure2 =</span> <span class="fu">as.numeric</span>(CapaciteNeutralisation_3mois_mesure2),</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_7mois_mesure1 =</span> <span class="fu">as.numeric</span>(CapaciteNeutralisation_7mois_mesure1),</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">CapaciteNeutralisation_7mois_mesure2 =</span> <span class="fu">as.numeric</span>(CapaciteNeutralisation_7mois_mesure2)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(CapaciteNeutralisation_28j_mesure1, CapaciteNeutralisation_28j_mesure2, </span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>         CapaciteNeutralisation_3mois_mesure1, CapaciteNeutralisation_3mois_mesure2,</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>         CapaciteNeutralisation_7mois_mesure1, CapaciteNeutralisation_7mois_mesure2) <span class="sc">%&gt;%</span> </span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(class)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  CapaciteNeutralisation_28j_mesure1   CapaciteNeutralisation_28j_mesure2 
+                           "numeric"                            "numeric" 
+CapaciteNeutralisation_3mois_mesure1 CapaciteNeutralisation_3mois_mesure2 
+                           "numeric"                            "numeric" 
+CapaciteNeutralisation_7mois_mesure1 CapaciteNeutralisation_7mois_mesure2 
+                           "numeric"                            "numeric" </code></pre>
+</div>
+</div>
+</section>
+<section id="construction-de-la-variable-dérivée-titre_tronque_derivee" class="level2">
+<h2 class="anchored" data-anchor-id="construction-de-la-variable-dérivée-titre_tronque_derivee">Construction de la variable dérivée : Titre_tronque_derivee</h2>
+<p>Colonne vide à 100% dans le fichier source. Reconstruite selon une règle documentée : valeur = 120 si le statut de censure au temps correspondant à <code>Temps_suivi_jours</code> est “Censure haute” (92j pour 3 mois, 182j/210j pour 7 mois, faute de colonne dédiée à 182 jours), vide sinon.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> vaccine <span class="sc">%&gt;%</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Titre_tronque_derivee =</span> <span class="fu">case_when</span>(</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Temps_suivi_jours) <span class="sc">~</span> <span class="cn">NA_real_</span>,</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>      Temps_suivi_jours <span class="sc">==</span> <span class="dv">92</span> <span class="sc">&amp;</span> Titre_AC_3mois_statut <span class="sc">==</span> <span class="st">"Censure haute"</span> <span class="sc">~</span> <span class="dv">120</span>,</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>      Temps_suivi_jours <span class="sc">!=</span> <span class="dv">92</span> <span class="sc">&amp;</span> Titre_AC_7mois_mesure1_statut <span class="sc">==</span> <span class="st">"Censure haute"</span> <span class="sc">~</span> <span class="dv">120</span>,</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_real_</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Titre_tronque_derivee) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [294 × 1] (S3: tbl_df/tbl/data.frame)
+ $ Titre_tronque_derivee: num [1:294] 120 120 120 120 120 NA 120 NA NA 120 ...</code></pre>
+</div>
+</div>
+</section>
+<section id="indicateurs-de-validation" class="level2">
+<h2 class="anchored" data-anchor-id="indicateurs-de-validation">Indicateurs de validation</h2>
+<p><strong>Intégrité</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(vaccine)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 294</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(vaccine<span class="sc">$</span>ID_sujet)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 294</code></pre>
+</div>
+</div>
+<p><strong>Censure haute par temps</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> <span class="fu">count</span>(Titre_AC_28j_statut)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  Titre_AC_28j_statut     n
+  &lt;chr&gt;               &lt;int&gt;
+1 Censure haute          43
+2 Non testé             183
+3 Normal                 68</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> <span class="fu">count</span>(Titre_AC_3mois_statut)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  Titre_AC_3mois_statut     n
+  &lt;chr&gt;                 &lt;int&gt;
+1 Censure haute           156
+2 Non testé                91
+3 Normal                   47</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> <span class="fu">count</span>(Titre_AC_7mois_mesure1_statut)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  Titre_AC_7mois_mesure1_statut     n
+  &lt;chr&gt;                         &lt;int&gt;
+1 Censure haute                   174
+2 Non testé                        63
+3 Normal                           57</code></pre>
+</div>
+</div>
+<p><strong>Titre d’anticorps moyen, croissant dans le temps (cas “Normal” uniquement)</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Titre_AC_28j_statut <span class="sc">==</span> <span class="st">"Normal"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">moyenne =</span> <span class="fu">mean</span>(Titre_AC_28j_valeur, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  moyenne
+    &lt;dbl&gt;
+1    19.0</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Titre_AC_3mois_statut <span class="sc">==</span> <span class="st">"Normal"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">moyenne =</span> <span class="fu">mean</span>(Titre_AC_3mois_valeur, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  moyenne
+    &lt;dbl&gt;
+1    29.7</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Titre_AC_7mois_mesure1_statut <span class="sc">==</span> <span class="st">"Normal"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">moyenne =</span> <span class="fu">mean</span>(Titre_AC_7mois_mesure1_valeur, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  moyenne
+    &lt;dbl&gt;
+1    47.7</code></pre>
+</div>
+</div>
+<p>Nous confirmons une progression croissante (18,98 → 29,72 → 44,49), cohérente avec la réponse immunitaire attendue après vaccination (NB: obtenue directement en R, sans le bug de séparateur décimal rencontré sur Excel)</p>
+<p><strong>Cohérence chronologique des dates</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(vaccine<span class="sc">$</span>Date_dose2 <span class="sc">&lt;</span> vaccine<span class="sc">$</span>Date_dose1, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+</div>
+<p><strong>Plage d’âge plausible</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(vaccine<span class="sc">$</span>Age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 11</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(vaccine<span class="sc">$</span>Age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 16</code></pre>
+</div>
+</div>
+<p><strong>Titre_tronque_derivee / Statut_evenement</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>vaccine <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Titre_tronque_derivee <span class="sc">==</span> <span class="dv">120</span> <span class="sc">&amp;</span> Statut_evenement <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">nrow</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 150</code></pre>
+</div>
+</div>
+<p><code>Titre_tronque_derivee</code> et <code>Statut_evenement</code> mesurent des choses différentes (titre élevé au dernier suivi vs survenue d’un événement). Les 150 cas où les deux coexistent sont cohérents (un titre élevé va logiquement de pair avec l’absence d’événement), pas une anomalie.</p>
+</section>
+<section id="enregistrement" class="level2">
+<h2 class="anchored" data-anchor-id="enregistrement">Enregistrement</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(vaccine, <span class="st">"../data/clean/vaccine_clean_r.csv"</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>, <span class="at">na =</span> <span class="st">""</span>, <span class="at">fileEncoding =</span> <span class="st">"UTF-8"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="quarto" class="level2">
+<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
+<p>Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <a href="https://quarto.org" class="uri">https://quarto.org</a>.</p>
+</section>
+<section id="section" class="level2">
+<h2 class="anchored" data-anchor-id="section"></h2>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
